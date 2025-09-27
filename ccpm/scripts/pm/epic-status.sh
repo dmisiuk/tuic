@@ -53,12 +53,30 @@ else
     ((total++))
 
     task_status=$(grep "^status:" "$task_file" | head -1 | sed 's/^status: *//')
-    deps=$(grep "^depends_on:" "$task_file" | head -1 | sed 's/^depends_on: *\[//' | sed 's/\]//')
+    deps=$(grep "^depends_on:" "$task_file" | head -1 | sed 's/^depends_on: *\[//' | sed 's/\]//' | sed 's/depends_on: *//')
 
     if [ "$task_status" = "closed" ] || [ "$task_status" = "completed" ]; then
       ((closed++))
-    elif [ -n "$deps" ] && [ "$deps" != "depends_on:" ]; then
-      ((blocked++))
+    elif [ -n "$deps" ] && [ "$deps" != "[]" ] && [ "$deps" != "" ]; then
+      # Check if dependencies are actually blocking
+      deps_met=true
+      for dep in $deps; do
+        # Remove commas and check if dependency task exists and is closed
+        dep_clean=$(echo "$dep" | sed 's/,//')
+        if [ "$dep_clean" = "001" ] && ! grep -q "status: closed" "$epic_dir/5.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "002" ] && ! grep -q "status: closed" "$epic_dir/8.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "003" ] && ! grep -q "status: closed" "$epic_dir/9.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "004" ] && ! grep -q "status: closed" "$epic_dir/10.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "005" ] && ! grep -q "status: closed" "$epic_dir/11.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "006" ] && ! grep -q "status: closed" "$epic_dir/12.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "007" ] && ! grep -q "status: closed" "$epic_dir/13.md"; then deps_met=false; fi
+        if [ "$dep_clean" = "008" ] && ! grep -q "status: closed" "$epic_dir/6.md"; then deps_met=false; fi
+      done
+      if [ "$deps_met" = false ]; then
+        ((blocked++))
+      else
+        ((open++))
+      fi
     else
       ((open++))
     fi
