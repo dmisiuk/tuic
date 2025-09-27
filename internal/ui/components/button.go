@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/dzmitrymisiuk/ccpm-demo/internal/ui/styles"
+	"ccpm-demo/internal/ui/styles"
 )
 
 // Button represents an interactive button component with state management

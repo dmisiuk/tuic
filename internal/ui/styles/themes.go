@@ -6,7 +6,6 @@ import (
 
 // ThemeManager manages different UI themes
 type ThemeManager struct {
-	styleSystem  *StyleSystem
 	retroStyler  *RetroStyler
 	currentTheme string
 	themes       map[string]*UITheme
@@ -107,7 +106,6 @@ func NewThemeManager() *ThemeManager {
 	retroStyler := NewRetroStyler().WithPalette(palette)
 
 	tm := &ThemeManager{
-		styleSystem:  NewStyleSystem(),
 		retroStyler:  retroStyler,
 		currentTheme: "retro-casio",
 		themes:       make(map[string]*UITheme),

@@ -25,7 +25,7 @@ type Focusable interface {
 	OnBlur()
 
 	// Activate is called when the focused element is activated (space/enter)
-	Activate() (ui.Model, error)
+	Activate(model ui.Model) (ui.Model, error)
 }
 
 // FocusManager manages focus state and navigation
@@ -187,7 +187,7 @@ func (fm *FocusManager) navigateUp() bool {
 			elemRow, elemCol := element.GetPosition()
 			if elemRow < currentRow {
 				// Calculate distance (Manhattan distance)
-				distance := (currentRow - elemRow) + absInt(currentCol - elemCol)
+				distance := (currentRow - elemRow) + absIntFocus(currentCol - elemCol)
 				if bestIndex == -1 || distance < smallestDistance {
 					bestIndex = i
 					smallestDistance = distance
@@ -227,7 +227,7 @@ func (fm *FocusManager) navigateDown() bool {
 			elemRow, elemCol := element.GetPosition()
 			if elemRow > currentRow {
 				// Calculate distance (Manhattan distance)
-				distance := (elemRow - currentRow) + absInt(currentCol - elemCol)
+				distance := (elemRow - currentRow) + absIntFocus(currentCol - elemCol)
 				if bestIndex == -1 || distance < smallestDistance {
 					bestIndex = i
 					smallestDistance = distance
@@ -484,8 +484,8 @@ func (fm *FocusManager) GetFocusables() []Focusable {
 	return fm.focusables
 }
 
-// absInt returns the absolute value of an integer
-func absInt(x int) int {
+// absIntFocus returns the absolute value of an integer
+func absIntFocusFocus(x int) int {
 	if x < 0 {
 		return -x
 	}

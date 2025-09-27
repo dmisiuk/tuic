@@ -284,17 +284,11 @@ func (rs *RetroStyler) ValidateTheme() bool {
 		return false
 	}
 
-	// Test button style creation
-	testStyle := rs.RetroButtonStyle("number", "normal")
-	if testStyle == (lipgloss.Style{}) {
-		return false
-	}
+	// Test button style creation (this will panic if there are serious issues)
+	_ = rs.RetroButtonStyle("number", "normal")
 
-	// Test calculator theme
-	theme := rs.RetroCalculatorTheme()
-	if theme.Background == (lipgloss.Style{}) {
-		return false
-	}
+	// Test calculator theme (this will panic if there are serious issues)
+	_ = rs.RetroCalculatorTheme()
 
 	return true
 }

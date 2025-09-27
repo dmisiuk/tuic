@@ -156,7 +156,7 @@ func (cp *ColorPalette) GetBackground() lipgloss.Color {
 }
 
 // GetForeground returns the foreground color
-func (cp *cp *ColorPalette) GetForeground() lipgloss.Color {
+func (cp *ColorPalette) GetForeground() lipgloss.Color {
 	return cp.Foreground
 }
 

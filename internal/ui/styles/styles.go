@@ -141,7 +141,7 @@ func (sr *StyleRenderer) NewStyle(config StyleConfig) lipgloss.Style {
 	}
 
 	// Apply border
-	if config.Border != nil {
+	if config.Border != (lipgloss.Border{}) {
 		style = style.Border(config.Border)
 	}
 	if config.BorderForegnd != "" {
