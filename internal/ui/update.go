@@ -133,12 +133,17 @@ func handleEnterKey(m Model) (tea.Model, tea.Cmd) {
 	result, err := m.engine.Evaluate(m.input)
 	if err != nil {
 		m.setError(err)
+		// Handle error audio feedback
+		m.HandleCalculationAudio("", true)
 		return m, nil
 	}
 
 	// Update output and history
 	m.output = m.formatValue(result)
 	m.addToHistory(fmt.Sprintf("%s = %s", m.input, m.output))
+
+	// Handle success audio feedback
+	m.HandleCalculationAudio(m.output, false)
 
 	// Reset input
 	m.input = ""
@@ -394,6 +399,9 @@ func handleCalculatorButton(m Model, button string) (tea.Model, tea.Cmd) {
 func handleButtonGridAction(m Model, action *uiintegration.ButtonAction) (tea.Model, tea.Cmd) {
 	m.clearError()
 
+	// Handle audio feedback for button press
+	m.HandleButtonAudio(action)
+
 	// Process the button action based on its value
 	switch action.Value {
 	case "clear":
@@ -405,12 +413,14 @@ func handleButtonGridAction(m Model, action *uiintegration.ButtonAction) (tea.Mo
 		m.calculatorState.operator = ""
 		m.calculatorState.previousValue = 0
 		m.calculatorState.isWaitingForOperand = false
+		m.HandleClearAudio("clear")
 
 	case "clear_entry":
 		// Clear current input only
 		m.input = ""
 		m.cursorPosition = 0
 		m.calculatorState.displayValue = "0"
+		m.HandleClearAudio("clear_entry")
 
 	case "backspace":
 		return handleBackspaceKey(m)

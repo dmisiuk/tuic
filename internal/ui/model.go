@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"ccpm-demo/internal/calculator"
+	"ccpm-demo/internal/audio"
 	uiintegration "ccpm-demo/internal/ui/integration"
 )
 
@@ -34,6 +35,10 @@ type Model struct {
 
 	// Button Grid integration
 	buttonGrid *uiintegration.ButtonGrid
+
+	// Audio integration
+	audioIntegration *audio.Integration
+	audioEventHandler *audio.EventHandler
 
 	// Styling
 	styles styles
@@ -64,6 +69,11 @@ type styles struct {
 // NewModel creates a new application model
 func NewModel(engine *calculator.Engine) Model {
 	buttonGrid := uiintegration.NewButtonGrid()
+	audioIntegration := audio.NewIntegration()
+	audioEventHandler := audio.NewEventHandler(audioIntegration)
+
+	// Initialize audio integration (but don't fail if it doesn't work)
+	_ = audioIntegration.Initialize()
 
 	return Model{
 		engine: engine,
@@ -73,16 +83,18 @@ func NewModel(engine *calculator.Engine) Model {
 			previousValue: 0,
 			isWaitingForOperand: false,
 		},
-		input:        "",
-		output:       "",
-		error:        "",
-		cursorPosition: 0,
-		history:      []string{},
-		historyIndex: -1,
-		ready:        false,
-		quitting:     false,
-		buttonGrid:   buttonGrid,
-		styles:       defaultStyles(),
+		input:             "",
+		output:            "",
+		error:             "",
+		cursorPosition:    0,
+		history:           []string{},
+		historyIndex:      -1,
+		ready:             false,
+		quitting:          false,
+		buttonGrid:        buttonGrid,
+		audioIntegration:  audioIntegration,
+		audioEventHandler: audioEventHandler,
+		styles:            defaultStyles(),
 	}
 }
 
@@ -294,4 +306,85 @@ func (m *Model) SetButtonGridTheme(themeName string) error {
 // GetButtonGridTheme returns the current button grid theme
 func (m Model) GetButtonGridTheme() string {
 	return m.buttonGrid.GetCurrentTheme()
+}
+
+// GetAudioIntegration returns the audio integration component
+func (m Model) GetAudioIntegration() *audio.Integration {
+	return m.audioIntegration
+}
+
+// GetAudioEventHandler returns the audio event handler
+func (m Model) GetAudioEventHandler() *audio.EventHandler {
+	return m.audioEventHandler
+}
+
+// SetAudioEnabled enables or disables audio feedback
+func (m *Model) SetAudioEnabled(enabled bool) error {
+	if m.audioIntegration == nil {
+		return fmt.Errorf("audio integration is not initialized")
+	}
+	return m.audioIntegration.SetEnabled(enabled)
+}
+
+// SetAudioVolume sets the audio volume
+func (m *Model) SetAudioVolume(volume float64) error {
+	if m.audioIntegration == nil {
+		return fmt.Errorf("audio integration is not initialized")
+	}
+	return m.audioIntegration.SetVolume(volume)
+}
+
+// SetAudioMuted mutes or unmutes audio
+func (m *Model) SetAudioMuted(muted bool) error {
+	if m.audioIntegration == nil {
+		return fmt.Errorf("audio integration is not initialized")
+	}
+	return m.audioIntegration.SetMuted(muted)
+}
+
+// IsAudioEnabled checks if audio is enabled
+func (m Model) IsAudioEnabled() bool {
+	if m.audioIntegration == nil {
+		return false
+	}
+	status := m.audioIntegration.GetStatus()
+	return status.Initialized && status.AudioStatus.Enabled && !status.AudioStatus.Muted
+}
+
+// TestAudio tests the audio system
+func (m Model) TestAudio() error {
+	if m.audioIntegration == nil {
+		return fmt.Errorf("audio integration is not initialized")
+	}
+	return m.audioIntegration.TestAudio()
+}
+
+// HandleButtonAudio handles audio feedback for button presses
+func (m *Model) HandleButtonAudio(action *uiintegration.ButtonAction) {
+	if m.audioEventHandler != nil && action != nil {
+		// Handle button audio asynchronously to avoid blocking UI
+		go func() {
+			_ = m.audioEventHandler.HandleButtonPress(action)
+		}()
+	}
+}
+
+// HandleCalculationAudio handles audio feedback for calculation results
+func (m *Model) HandleCalculationAudio(result string, isError bool) {
+	if m.audioEventHandler != nil {
+		// Handle calculation audio asynchronously to avoid blocking UI
+		go func() {
+			_ = m.audioEventHandler.HandleCalculationResult(result, isError)
+		}()
+	}
+}
+
+// HandleClearAudio handles audio feedback for clear operations
+func (m *Model) HandleClearAudio(clearType string) {
+	if m.audioEventHandler != nil {
+		// Handle clear audio asynchronously to avoid blocking UI
+		go func() {
+			_ = m.audioEventHandler.HandleClearEvent(clearType)
+		}()
+	}
 }

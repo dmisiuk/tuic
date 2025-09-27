@@ -64,6 +64,8 @@ const (
 	ErrNotSupported       AudioErrorCode = "not_supported"
 	ErrTimeout           AudioErrorCode = "timeout"
 	ErrUnknown           AudioErrorCode = "unknown"
+	ErrNotInitialized    AudioErrorCode = "not_initialized"
+	ErrBufferFull        AudioErrorCode = "buffer_full"
 )
 
 // NewAudioError creates a new AudioError

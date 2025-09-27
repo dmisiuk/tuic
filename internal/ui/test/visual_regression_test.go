@@ -8,12 +8,17 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"ccpm-demo/internal/calculator"
+	"ccpm-demo/internal/ui"
 	"ccpm-demo/internal/ui/integration"
+	visualpkg "ccpm-demo/internal/visual"
+	visualtesting "ccpm-demo/internal/testing/visual"
 )
 
 // VisualRegressionTest provides a framework for testing UI rendering consistency
@@ -400,5 +405,258 @@ func TestButtonStateTransitions(t *testing.T) {
 				assert.Contains(t, rendering, "7") // Should show current button
 			})
 		}
+	})
+}
+
+// TestVisualFrameworkIntegration tests integration with the new visual testing framework
+func TestVisualFrameworkIntegration(t *testing.T) {
+	t.Run("framework_integration", func(t *testing.T) {
+		// Create calculator engine and UI model
+		engine := calculator.NewEngine()
+		model := ui.NewModel(engine)
+
+		// Create visual test suite
+		suite := visualtesting.NewVisualTestSuite()
+
+		// Test screenshot capture
+		t.Run("screenshot_capture", func(t *testing.T) {
+			screenshot, err := visualpkg.NewScreenshotFromModel(model, suite.Config)
+			require.NoError(t, err, "Should capture screenshot successfully")
+			require.NotNil(t, screenshot, "Screenshot should not be nil")
+
+			// Test screenshot properties
+			assert.NotNil(t, screenshot.Image, "Screenshot image should not be nil")
+			assert.Greater(t, screenshot.Config.Width, 0, "Screenshot width should be positive")
+			assert.Greater(t, screenshot.Config.Height, 0, "Screenshot height should be positive")
+
+			// Test saving screenshot
+			tempDir := t.TempDir()
+			screenshotPath := filepath.Join(tempDir, "integration_test.png")
+			err = screenshot.Save(screenshotPath)
+			assert.NoError(t, err, "Should save screenshot successfully")
+
+			// Verify file was created
+			_, err = os.Stat(screenshotPath)
+			assert.NoError(t, err, "Screenshot file should exist")
+		})
+
+		// Test visual comparison
+		t.Run("visual_comparison", func(t *testing.T) {
+			// Capture two screenshots
+			screenshot1, err := visualpkg.NewScreenshotFromModel(model, suite.Config)
+			require.NoError(t, err, "Should capture first screenshot")
+
+			screenshot2, err := visualpkg.NewScreenshotFromModel(model, suite.Config)
+			require.NoError(t, err, "Should capture second screenshot")
+
+			// Compare screenshots
+			compareConfig := visualpkg.NewDefaultCompareConfig()
+			result, err := visualpkg.CompareScreenshots(screenshot1, screenshot2, compareConfig)
+			require.NoError(t, err, "Should compare screenshots successfully")
+			require.NotNil(t, result, "Comparison result should not be nil")
+
+			// Test comparison results
+			assert.NotNil(t, result.DiffImage, "Diff image should not be nil")
+			assert.GreaterOrEqual(t, result.DiffRatio, 0.0, "Diff ratio should be >= 0")
+			assert.LessOrEqual(t, result.DiffRatio, 1.0, "Diff ratio should be <= 1")
+
+			// Since both screenshots are identical, diff ratio should be minimal
+			assert.LessOrEqual(t, result.DiffRatio, 0.01, "Identical screenshots should have minimal diff")
+
+			// Test comparison report
+			report := result.RenderComparisonReport()
+			assert.NotEmpty(t, report, "Comparison report should not be empty")
+			assert.Contains(t, report, "Visual Comparison Report", "Report should contain title")
+		})
+
+		// Test demo generation
+		t.Run("demo_generation", func(t *testing.T) {
+			tempDir := t.TempDir()
+			demoGen := visualpkg.NewDemoGenerator(model, suite.Config, tempDir)
+
+			// Test recording
+			err := demoGen.StartRecording("integration_test", "Integration test recording")
+			require.NoError(t, err, "Should start recording successfully")
+			assert.True(t, demoGen.Recording, "Should be recording")
+
+			// Capture a frame
+			err = demoGen.CaptureFrame("Integration test frame")
+			assert.NoError(t, err, "Should capture frame successfully")
+
+			// Add key press
+			err = demoGen.AddKeyPress(tea.KeyMsg{Type: tea.KeyEnter}, "Test key press")
+			assert.NoError(t, err, "Should add key press successfully")
+
+			// Stop recording
+			err = demoGen.StopRecording()
+			assert.NoError(t, err, "Should stop recording successfully")
+			assert.False(t, demoGen.Recording, "Should not be recording")
+
+			// Verify demo files were created
+			_, err = os.Stat(filepath.Join(tempDir, "demo.json"))
+			assert.NoError(t, err, "Demo metadata file should exist")
+		})
+
+		// Test visual regression test
+		t.Run("visual_regression_test", func(t *testing.T) {
+			tempDir := t.TempDir()
+
+			config := visualtesting.TestConfig{
+				BaselineDir:   filepath.Join(tempDir, "baseline"),
+				CurrentDir:    filepath.Join(tempDir, "current"),
+				DiffDir:       filepath.Join(tempDir, "diff"),
+				Tolerance:     0.01,
+				UpdateMode:    true, // Create baseline
+				ParallelRuns:  1,
+				MaxDiffRatio:  0.1,
+				MaxTestTime:   30 * time.Second,
+				SaveScreenshots: true,
+			}
+
+			test := visualtesting.NewVisualRegressionTest(
+				"Integration Test",
+				"Integration test for visual testing framework",
+				model,
+				config,
+			)
+
+			// Run test
+			err := test.Run()
+			require.NoError(t, err, "Visual regression test should run successfully")
+
+			// Check results
+			assert.True(t, test.Results.Passed, "Visual regression test should pass")
+			assert.Greater(t, test.Results.TotalTests, 0, "Should have run some tests")
+
+			// Generate and check report
+			report := test.GenerateReport()
+			assert.NotEmpty(t, report, "Report should not be empty")
+			assert.Contains(t, report, "Visual Regression Test Report", "Report should contain title")
+
+			// Save results
+			resultsFile := filepath.Join(tempDir, "results.json")
+			err = test.SaveResults(resultsFile)
+			assert.NoError(t, err, "Should save results successfully")
+
+			_, err = os.Stat(resultsFile)
+			assert.NoError(t, err, "Results file should exist")
+		})
+
+		// Test performance
+		t.Run("performance", func(t *testing.T) {
+			if testing.Short() {
+				t.Skip("Skipping performance tests in short mode")
+			}
+
+			iterations := 20
+			var totalTime time.Duration
+
+			for i := 0; i < iterations; i++ {
+				start := time.Now()
+				_, err := visualpkg.NewScreenshotFromModel(model, suite.Config)
+				assert.NoError(t, err, "Should capture screenshot")
+				totalTime += time.Since(start)
+			}
+
+			avgTime := totalTime / time.Duration(iterations)
+			t.Logf("Average screenshot capture time: %v", avgTime)
+
+			// Performance requirement: screenshots should be fast
+			assert.Less(t, avgTime, 50*time.Millisecond, "Screenshot capture should be fast (< 50ms)")
+		})
+	})
+}
+
+// TestCompleteVisualTestingWorkflow tests the complete visual testing workflow
+func TestCompleteVisualTestingWorkflow(t *testing.T) {
+	t.Run("complete_workflow", func(t *testing.T) {
+		// Create test environment
+		tempDir := t.TempDir()
+		engine := calculator.NewEngine()
+		model := ui.NewModel(engine)
+
+		// Step 1: Create baseline screenshots
+		t.Run("create_baseline", func(t *testing.T) {
+			config := visualtesting.TestConfig{
+				BaselineDir:   filepath.Join(tempDir, "baseline"),
+				CurrentDir:    filepath.Join(tempDir, "current"),
+				DiffDir:       filepath.Join(tempDir, "diff"),
+				Tolerance:     0.01,
+				UpdateMode:    true, // Create baseline
+				ParallelRuns:  1,
+				SaveScreenshots: true,
+			}
+
+			test := visualtesting.NewVisualRegressionTest(
+				"Baseline Creation",
+				"Create baseline screenshots",
+				model,
+				config,
+			)
+
+			err := test.Run()
+			require.NoError(t, err, "Should create baseline successfully")
+			assert.True(t, test.Results.Passed, "Baseline creation should pass")
+		})
+
+		// Step 2: Run regression test against baseline
+		t.Run("regression_test", func(t *testing.T) {
+			config := visualtesting.TestConfig{
+				BaselineDir:   filepath.Join(tempDir, "baseline"),
+				CurrentDir:    filepath.Join(tempDir, "current"),
+				DiffDir:       filepath.Join(tempDir, "diff"),
+				Tolerance:     0.01,
+				UpdateMode:    false, // Don't update baseline
+				ParallelRuns:  1,
+				SaveScreenshots: true,
+			}
+
+			test := visualtesting.NewVisualRegressionTest(
+				"Regression Test",
+				"Test against baseline",
+				model,
+				config,
+			)
+
+			err := test.Run()
+			require.NoError(t, err, "Should run regression test successfully")
+			assert.True(t, test.Results.Passed, "Regression test should pass")
+		})
+
+		// Step 3: Generate demo
+		t.Run("generate_demo", func(t *testing.T) {
+			suite := visualtesting.NewVisualTestSuite()
+			demoDir := filepath.Join(tempDir, "demo")
+			demoGen := visualpkg.NewDemoGenerator(model, suite.Config, demoDir)
+
+			err := demoGen.GenerateBasicDemo()
+			require.NoError(t, err, "Should generate demo successfully")
+
+			// Verify demo files exist
+			_, err = os.Stat(filepath.Join(demoDir, "demo.json"))
+			assert.NoError(t, err, "Demo metadata should exist")
+		})
+
+		// Step 4: Verify all artifacts
+		t.Run("verify_artifacts", func(t *testing.T) {
+			// Check baseline directory
+			_, err := os.Stat(filepath.Join(tempDir, "baseline"))
+			assert.NoError(t, err, "Baseline directory should exist")
+
+			// Check current directory
+			_, err = os.Stat(filepath.Join(tempDir, "current"))
+			assert.NoError(t, err, "Current directory should exist")
+
+			// Check demo directory
+			_, err = os.Stat(filepath.Join(tempDir, "demo"))
+			assert.NoError(t, err, "Demo directory should exist")
+
+			// Check that directories contain files
+			baselineFiles, err := os.ReadDir(filepath.Join(tempDir, "baseline"))
+			assert.NoError(t, err, "Should read baseline directory")
+			assert.Greater(t, len(baselineFiles), 0, "Baseline directory should contain files")
+		})
+
+		t.Logf("Complete visual testing workflow test passed. Artifacts saved in: %s", tempDir)
 	})
 }
