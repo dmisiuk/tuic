@@ -9,7 +9,7 @@ import (
 // KeyBinding represents a mapping from a key to an action
 type KeyBinding struct {
 	Key         tea.KeyType
-	Modifiers   tea.KeyModifier
+	Alt         bool
 	Action      KeyAction
 	Value       string
 	Description string
@@ -25,53 +25,50 @@ func DefaultKeyBindings() *KeyBindingsConfig {
 	return &KeyBindingsConfig{
 		Bindings: []KeyBinding{
 			// Number keys (0-9) - direct input
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "0", Description: "Input number 0"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "1", Description: "Input number 1"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "2", Description: "Input number 2"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "3", Description: "Input number 3"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "4", Description: "Input number 4"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "5", Description: "Input number 5"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "6", Description: "Input number 6"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "7", Description: "Input number 7"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "8", Description: "Input number 8"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: "9", Description: "Input number 9"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "0", Description: "Input number 0"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "1", Description: "Input number 1"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "2", Description: "Input number 2"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "3", Description: "Input number 3"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "4", Description: "Input number 4"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "5", Description: "Input number 5"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "6", Description: "Input number 6"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "7", Description: "Input number 7"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "8", Description: "Input number 8"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: "9", Description: "Input number 9"},
 
 			// Decimal point
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionNumber, Value: ".", Description: "Decimal point"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionNumber, Value: ".", Description: "Decimal point"},
 
 			// Operators
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionOperator, Value: "+", Description: "Addition operator"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionOperator, Value: "-", Description: "Subtraction operator"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionOperator, Value: "*", Description: "Multiplication operator"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionOperator, Value: "/", Description: "Division operator"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionOperator, Value: "+", Description: "Addition operator"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionOperator, Value: "-", Description: "Subtraction operator"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionOperator, Value: "*", Description: "Multiplication operator"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionOperator, Value: "/", Description: "Division operator"},
 
 			// Equals
-			{Key: tea.KeyEnter, Modifiers: tea.ModNone, Action: KeyActionEquals, Value: "=", Description: "Calculate result"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionEquals, Value: "=", Description: "Calculate result"},
+			{Key: tea.KeyEnter, Alt: false, Action: KeyActionEquals, Value: "=", Description: "Calculate result"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionEquals, Value: "=", Description: "Calculate result"},
 
 			// Clear operations
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionClear, Value: "c", Description: "Clear input"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModShift, Action: KeyActionClear, Value: "C", Description: "Clear input"},
-			{Key: tea.KeyRunes, Modifiers: tea.ModNone, Action: KeyActionClear, Value: "C", Description: "Clear input"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionClear, Value: "c", Description: "Clear input"},
+			{Key: tea.KeyRunes, Alt: false, Action: KeyActionClear, Value: "C", Description: "Clear input"},
 
 			// Backspace/Delete
-			{Key: tea.KeyBackspace, Modifiers: tea.ModNone, Action: KeyActionBackspace, Value: "backspace", Description: "Delete previous character"},
-			{Key: tea.KeyDelete, Modifiers: tea.ModNone, Action: KeyActionBackspace, Value: "delete", Description: "Delete next character"},
+			{Key: tea.KeyBackspace, Alt: false, Action: KeyActionBackspace, Value: "backspace", Description: "Delete previous character"},
+			{Key: tea.KeyDelete, Alt: false, Action: KeyActionBackspace, Value: "delete", Description: "Delete next character"},
 
 			// Navigation keys
-			{Key: tea.KeyTab, Modifiers: tea.ModNone, Action: KeyActionNavigate, Value: "tab", Description: "Next focus"},
-			{Key: tea.KeyTab, Modifiers: tea.ModShift, Action: KeyActionNavigate, Value: "shift_tab", Description: "Previous focus"},
-			{Key: tea.KeyUp, Modifiers: tea.ModNone, Action: KeyActionNavigate, Value: "up", Description: "Navigate up"},
-			{Key: tea.KeyDown, Modifiers: tea.ModNone, Action: KeyActionNavigate, Value: "down", Description: "Navigate down"},
-			{Key: tea.KeyLeft, Modifiers: tea.ModNone, Action: KeyActionNavigate, Value: "left", Description: "Navigate left"},
-			{Key: tea.KeyRight, Modifiers: tea.ModNone, Action: KeyActionNavigate, Value: "right", Description: "Navigate right"},
+			{Key: tea.KeyTab, Alt: false, Action: KeyActionNavigate, Value: "tab", Description: "Next focus"},
+			{Key: tea.KeyUp, Alt: false, Action: KeyActionNavigate, Value: "up", Description: "Navigate up"},
+			{Key: tea.KeyDown, Alt: false, Action: KeyActionNavigate, Value: "down", Description: "Navigate down"},
+			{Key: tea.KeyLeft, Alt: false, Action: KeyActionNavigate, Value: "left", Description: "Navigate left"},
+			{Key: tea.KeyRight, Alt: false, Action: KeyActionNavigate, Value: "right", Description: "Navigate right"},
 
 			// Focus activation
-			{Key: tea.KeySpace, Modifiers: tea.ModNone, Action: KeyActionFocusActivate, Value: "space", Description: "Activate focused button"},
+			{Key: tea.KeySpace, Alt: false, Action: KeyActionFocusActivate, Value: "space", Description: "Activate focused button"},
 
 			// Quit
-			{Key: tea.KeyEsc, Modifiers: tea.ModNone, Action: KeyActionQuit, Value: "quit", Description: "Quit application"},
-			{Key: tea.KeyCtrlC, Modifiers: tea.ModNone, Action: KeyActionQuit, Value: "quit", Description: "Quit application"},
+			{Key: tea.KeyEsc, Alt: false, Action: KeyActionQuit, Value: "quit", Description: "Quit application"},
 		},
 	}
 }
@@ -94,7 +91,7 @@ func NewKeyBindingManager(config *KeyBindingsConfig) *KeyBindingManager {
 // GetActionForKey returns the key binding for a given key message
 func (kbm *KeyBindingManager) GetActionForKey(msg tea.KeyMsg) *KeyBinding {
 	for _, binding := range kbm.config.Bindings {
-		if binding.Key == msg.Type && (binding.Modifiers == tea.ModNone || binding.Modifiers == msg.Modifiers) {
+		if binding.Key == msg.Type && (!binding.Alt || binding.Alt == msg.Alt) {
 			// For rune-based keys, we need to check the rune value
 			if binding.Key == tea.KeyRunes && len(msg.Runes) > 0 {
 				if string(msg.Runes) == binding.Value {
@@ -150,11 +147,7 @@ func (kbm *KeyBindingManager) GetKeyDescription(binding KeyBinding) string {
 	case tea.KeyEnter:
 		keyName = "Enter"
 	case tea.KeyTab:
-		if binding.Modifiers == tea.ModShift {
-			keyName = "Shift+Tab"
-		} else {
-			keyName = "Tab"
-		}
+		keyName = "Tab"
 	case tea.KeyBackspace:
 		keyName = "Backspace"
 	case tea.KeyDelete:

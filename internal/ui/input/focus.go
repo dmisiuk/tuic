@@ -187,7 +187,7 @@ func (fm *FocusManager) navigateUp() bool {
 			elemRow, elemCol := element.GetPosition()
 			if elemRow < currentRow {
 				// Calculate distance (Manhattan distance)
-				distance := (currentRow - elemRow) + abs(currentCol - elemCol)
+				distance := (currentRow - elemRow) + absInt(currentCol - elemCol)
 				if bestIndex == -1 || distance < smallestDistance {
 					bestIndex = i
 					smallestDistance = distance
@@ -227,7 +227,7 @@ func (fm *FocusManager) navigateDown() bool {
 			elemRow, elemCol := element.GetPosition()
 			if elemRow > currentRow {
 				// Calculate distance (Manhattan distance)
-				distance := (elemRow - currentRow) + abs(currentCol - elemCol)
+				distance := (elemRow - currentRow) + absInt(currentCol - elemCol)
 				if bestIndex == -1 || distance < smallestDistance {
 					bestIndex = i
 					smallestDistance = distance
@@ -484,8 +484,8 @@ func (fm *FocusManager) GetFocusables() []Focusable {
 	return fm.focusables
 }
 
-// abs returns the absolute value of an integer
-func abs(x int) int {
+// absInt returns the absolute value of an integer
+func absInt(x int) int {
 	if x < 0 {
 		return -x
 	}

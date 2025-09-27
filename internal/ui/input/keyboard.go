@@ -23,11 +23,11 @@ const (
 
 // KeyEvent represents a keyboard input event
 type KeyEvent struct {
-	Key       tea.KeyType
-	Rune      rune
-	Action    KeyAction
-	Value     string
-	Modifiers tea.KeyModifier
+	Key    tea.KeyType
+	Rune   rune
+	Action KeyAction
+	Value  string
+	Alt    bool
 }
 
 // KeyHandler defines the interface for keyboard input handling
@@ -99,20 +99,20 @@ func (kh *KeyboardHandler) GetActionForKey(msg tea.KeyMsg) KeyEvent {
 	binding := kh.keyBindingManager.GetActionForKey(msg)
 	if binding == nil {
 		return KeyEvent{
-			Key:       msg.Type,
-			Rune:      msg.Runes,
-			Action:    KeyActionNone,
-			Value:     "",
-			Modifiers: msg.Modifiers,
+			Key:    msg.Type,
+			Rune:   ' ', // Default rune since we don't have a specific one
+			Action: KeyActionNone,
+			Value:  "",
+			Alt:    msg.Alt,
 		}
 	}
 
 	return KeyEvent{
-		Key:       binding.Key,
-		Rune:      msg.Runes,
-		Action:    binding.Action,
-		Value:     binding.Value,
-		Modifiers: binding.Modifiers,
+		Key:    binding.Key,
+		Rune:   ' ', // Default rune since we don't have a specific one
+		Action: binding.Action,
+		Value:  binding.Value,
+		Alt:    binding.Alt,
 	}
 }
 
