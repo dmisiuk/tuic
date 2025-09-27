@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"ccpm-demo/internal/calculator"
-	"ccpm-demo/internal/ui/integration"
+	uiintegration "ccpm-demo/internal/ui/integration"
 )
 
 // Model represents the application state following the MVU pattern
@@ -33,7 +33,7 @@ type Model struct {
 	quitting bool
 
 	// Button Grid integration
-	buttonGrid *integration.ButtonGrid
+	buttonGrid *uiintegration.ButtonGrid
 
 	// Styling
 	styles styles
@@ -63,7 +63,7 @@ type styles struct {
 
 // NewModel creates a new application model
 func NewModel(engine *calculator.Engine) Model {
-	buttonGrid := integration.NewButtonGrid()
+	buttonGrid := uiintegration.NewButtonGrid()
 
 	return Model{
 		engine: engine,
@@ -282,7 +282,7 @@ func (m *Model) ClearError() {
 }
 
 // GetButtonGrid returns the button grid component
-func (m Model) GetButtonGrid() *integration.ButtonGrid {
+func (m Model) GetButtonGrid() *uiintegration.ButtonGrid {
 	return m.buttonGrid
 }
 

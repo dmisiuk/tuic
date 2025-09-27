@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	uiintegration "ccpm-demo/internal/ui/integration"
 )
 
 // update handles all incoming messages and updates the model state
@@ -69,6 +70,7 @@ func handleKeyMsg(m Model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if action := m.buttonGrid.HandleKeyPress(msg); action != nil {
 			return handleButtonGridAction(m, action)
 		}
+		return m, nil
 
 	case tea.KeyRunes:
 		// Handle button grid first for direct input
@@ -389,7 +391,7 @@ func handleCalculatorButton(m Model, button string) (tea.Model, tea.Cmd) {
 }
 
 // handleButtonGridAction processes actions from the button grid
-func handleButtonGridAction(m Model, action *integration.ButtonAction) (tea.Model, tea.Cmd) {
+func handleButtonGridAction(m Model, action *uiintegration.ButtonAction) (tea.Model, tea.Cmd) {
 	m.clearError()
 
 	// Process the button action based on its value
