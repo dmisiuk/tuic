@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"ccpm-demo/internal/visual"
 )
 
 // ReportGenerator generates various types of visual test reports
@@ -120,6 +118,31 @@ func (rg *ReportGenerator) generateHTMLReport() error {
 		"base": func(path string) string {
 			return filepath.Base(path)
 		},
+		"gt": func(a, b interface{}) bool {
+			switch av := a.(type) {
+			case float64:
+				switch bv := b.(type) {
+				case float64:
+					return av > bv
+				case int:
+					return av > float64(bv)
+				}
+			case int:
+				switch bv := b.(type) {
+				case float64:
+					return float64(av) > bv
+				case int:
+					return av > bv
+				}
+			}
+			return false
+		},
+		"formatFloat": func(f float64) string {
+			return fmt.Sprintf("%.4f", f)
+		},
+		"mul": func(a, b int) int {
+			return a * b
+		},
 	}
 
 	tmpl, err := template.New("visual-report").Funcs(funcMap).Parse(htmlTemplate)
@@ -174,6 +197,17 @@ func (rg *ReportGenerator) enrichTestResults() *HTMLReportData {
 	}
 }
 
+// enrichTestCases adds additional information to test cases
+func (rg *ReportGenerator) enrichTestCases() map[string]*TestCaseResult {
+	enriched := make(map[string]*TestCaseResult)
+
+	for name, result := range rg.TestResults.TestCases {
+		enriched[name] = rg.enrichTestCase(result)
+	}
+
+	return enriched
+}
+
 // enrichTestCase adds additional information to a test case
 func (rg *ReportGenerator) enrichTestCase(result *TestCaseResult) *TestCaseResult {
 	enriched := *result
@@ -189,7 +223,7 @@ func (rg *ReportGenerator) enrichTestCase(result *TestCaseResult) *TestCaseResul
 
 	// Add performance rating
 	if enriched.Duration > 0 {
-		enriched.Details += fmt.Sprintf (" (%v)", enriched.Duration.Round(time.Millisecond))
+		enriched.Details += fmt.Sprintf(" (%v)", enriched.Duration.Round(time.Millisecond))
 	}
 
 	return &enriched
@@ -201,27 +235,6 @@ type EnhancedTestCaseResult struct {
 	DiffRatioPercent  float64
 	ScreenshotBase    string
 	DiffImageBase     string
-}
-
-// enrichTestCase adds additional information to a test case
-func (rg *ReportGenerator) enrichTestCase(result *TestCaseResult) *TestCaseResult {
-	enriched := *result
-
-	// Add status text
-	if enriched.Passed {
-		enriched.Details = "✅ PASSED"
-	} else if enriched.Skipped {
-		enriched.Details = "⏭️ SKIPPED"
-	} else {
-		enriched.Details = "❌ FAILED"
-	}
-
-	// Add performance rating
-	if enriched.Duration > 0 {
-		enriched.Details += fmt.Sprintf (" (%v)", enriched.Duration.Round(time.Millisecond))
-	}
-
-	return &enriched
 }
 
 // generateTextReportContent generates the content for a text report

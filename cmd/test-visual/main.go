@@ -11,6 +11,7 @@ import (
 	"ccpm-demo/internal/calculator"
 	"ccpm-demo/internal/testing/visual"
 	"ccpm-demo/internal/ui"
+	visualpkg "ccpm-demo/internal/visual"
 )
 
 func main() {
@@ -130,8 +131,8 @@ func runDemoMode(model ui.Model, outputDir string, verbose bool) error {
 	fmt.Printf("Output directory: %s\n", outputDir)
 
 	// Create demo generator
-	config := visual.NewDefaultConfig()
-	demoGen := visual.NewDemoGenerator(model, config, outputDir)
+	config := visualpkg.NewDefaultConfig()
+	demoGen := visualpkg.NewDemoGenerator(model, config, outputDir)
 
 	// Generate all demos
 	if err := demoGen.GenerateAllDemos(); err != nil {

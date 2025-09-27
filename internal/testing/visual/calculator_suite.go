@@ -218,7 +218,7 @@ func (cvs *CalculatorVisualSuite) TestButtonVisualFeedback(t *testing.T) {
 
 		for _, buttonTest := range buttonTests {
 			t.Run(buttonTest.buttonType, func(t *testing.T) {
-				for i, key := range buttonTest.buttonKeys {
+				for _, key := range buttonTest.buttonKeys {
 					t.Run(fmt.Sprintf("key_%s", key), func(t *testing.T) {
 						// Reset calculator
 						cvs.resetCalculator()

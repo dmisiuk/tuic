@@ -6,8 +6,6 @@ import (
 	"image/color"
 	"math"
 	"strings"
-
-	"github.com/charmbracelet/lipgloss"
 )
 
 // ComparisonResult represents the result of a visual comparison

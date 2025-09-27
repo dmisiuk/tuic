@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	tea "github.com/charmbracelet/bubbletea"
 
 	"ccpm-demo/internal/calculator"
 	"ccpm-demo/internal/ui"

@@ -1,17 +1,14 @@
 package visual
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"image"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 // DemoAction represents a single action in a demo sequence
@@ -227,29 +224,28 @@ func (dg *DemoGenerator) GenerateAdvancedDemo() error {
 
 	// Complex calculation: (123 + 456) * 2 / 3
 	operations := []struct {
-		keys       []tea.KeyType
+		keys       []rune
 		description string
 	}{
-		{[]tea.KeyType{tea.KeyRunes{'('}}, "Start parentheses"},
-		{[]tea.KeyType{tea.KeyRunes{'1'}}, "Press '1'"},
-		{[]tea.KeyType{tea.KeyRunes{'2'}}, "Press '2'"},
-		{[]tea.KeyType{tea.KeyRunes{'3'}}, "Press '3'"},
-		{[]tea.KeyType{tea.KeyRunes{')'}}, "End parentheses"},
-		{[]tea.KeyType{tea.KeyRunes{'+'}}, "Press '+'"},
-		{[]tea.KeyType{tea.KeyRunes{'4'}}, "Press '4'"},
-		{[]tea.KeyType{tea.KeyRunes{'5'}}, "Press '5'"},
-		{[]tea.KeyType{tea.KeyRunes{'6'}}, "Press '6'"},
-		{[]tea.KeyType{tea.KeyRunes{')'}}, "End parentheses"},
-		{[]tea.KeyType{tea.KeyRunes{'*'}}, "Press '*'"},
-		{[]tea.KeyType{tea.KeyRunes{'2'}}, "Press '2'"},
-		{[]tea.KeyType{tea.KeyRunes{'/'}}, "Press '/'"},
-		{[]tea.KeyType{tea.KeyRunes{'3'}}, "Press '3'"},
-		{[]tea.KeyType{tea.KeyEnter}, "Calculate result"},
+		{[]rune{'('}, "Start parentheses"},
+		{[]rune{'1'}, "Press '1'"},
+		{[]rune{'2'}, "Press '2'"},
+		{[]rune{'3'}, "Press '3'"},
+		{[]rune{')'}, "End parentheses"},
+		{[]rune{'+'}, "Press '+'"},
+		{[]rune{'4'}, "Press '4'"},
+		{[]rune{'5'}, "Press '5'"},
+		{[]rune{'6'}, "Press '6'"},
+		{[]rune{'*'}, "Press '*'"},
+		{[]rune{'2'}, "Press '2'"},
+		{[]rune{'/'}, "Press '/'"},
+		{[]rune{'3'}, "Press '3'"},
+		{[]rune{'='}, "Calculate result"},
 	}
 
 	for _, op := range operations {
 		for _, key := range op.keys {
-			if err := dg.AddKeyPress(tea.KeyMsg{Type: key}, op.description); err != nil {
+			if err := dg.AddKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{key}}, op.description); err != nil {
 				return err
 			}
 		}
@@ -275,20 +271,20 @@ func (dg *DemoGenerator) GenerateErrorDemo() error {
 
 	// Division by zero
 	errorOps := []struct {
-		keys       []tea.KeyType
+		keys       []rune
 		description string
 	}{
-		{[]tea.KeyType{tea.KeyRunes{'1'}}, "Press '1'"},
-		{[]tea.KeyType{tea.KeyRunes{'0'}}, "Press '0'"},
-		{[]tea.KeyType{tea.KeyRunes{'/'}}, "Press '/'"},
-		{[]tea.KeyType{tea.KeyRunes{'0'}}, "Press '0' (division by zero)"},
-		{[]tea.KeyType{tea.KeyEnter}, "Attempt calculation"},
-		{[]tea.KeyType{tea.KeyRunes{'C'}}, "Clear error"},
+		{[]rune{'1'}, "Press '1'"},
+		{[]rune{'0'}, "Press '0'"},
+		{[]rune{'/'}, "Press '/'"},
+		{[]rune{'0'}, "Press '0' (division by zero)"},
+		{[]rune{'='}, "Attempt calculation"},
+		{[]rune{'C'}, "Clear error"},
 	}
 
 	for _, op := range errorOps {
 		for _, key := range op.keys {
-			if err := dg.AddKeyPress(tea.KeyMsg{Type: key}, op.description); err != nil {
+			if err := dg.AddKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{key}}, op.description); err != nil {
 				return err
 			}
 		}
@@ -314,7 +310,7 @@ func (dg *DemoGenerator) GenerateKeyboardNavigationDemo() error {
 
 	// Navigation keys
 	navOps := []struct {
-		key        tea.KeyType
+		keyType    tea.KeyType
 		description string
 	}{
 		{tea.KeyTab, "Tab to focus first button"},
@@ -326,7 +322,7 @@ func (dg *DemoGenerator) GenerateKeyboardNavigationDemo() error {
 	}
 
 	for _, op := range navOps {
-		if err := dg.AddKeyPress(tea.KeyMsg{Type: op.key}, op.description); err != nil {
+		if err := dg.AddKeyPress(tea.KeyMsg{Type: op.keyType}, op.description); err != nil {
 			return err
 		}
 		if err := dg.CaptureFrame(op.description); err != nil {
@@ -408,10 +404,12 @@ func keyToString(key tea.KeyMsg) string {
 		return "right"
 	case tea.KeyEsc:
 		return "escape"
-	default:
-		if key.Rune != 0 {
-			return string(key.Rune)
+	case tea.KeyRunes:
+		if len(key.Runes) > 0 {
+			return string(key.Runes[0])
 		}
+		return "runes_empty"
+	default:
 		return fmt.Sprintf("unknown_%d", int(key.Type))
 	}
 }

@@ -10,11 +10,11 @@ import (
 
 // InputValidator implements input validation for calculator operations
 type InputValidator struct {
-	maxInputLength   int
-	maxDecimalPlaces int
-	allowNegative    bool
-	allowOperators   bool
-	iv.lastValidationError string
+	maxInputLength     int
+	maxDecimalPlaces   int
+	allowNegative      bool
+	allowOperators     bool
+	lastValidationError string
 }
 
 // ValidationResult represents the result of input validation
@@ -50,7 +50,7 @@ func (iv *InputValidator) Validate(event Event) bool {
 // GetValidationError implements the EventValidator interface
 func (iv *InputValidator) GetValidationError() string {
 	// This will be set during the last validation operation
-	return iv.iv.lastValidationError
+	return iv.lastValidationError
 }
 
 
@@ -103,13 +103,13 @@ func (iv *InputValidator) validateMouseEvent(event Event) bool {
 // validateNumberInput validates number input (digits and decimal point)
 func (iv *InputValidator) validateNumberInput(value string) bool {
 	if value == "" {
-		iv.iv.lastValidationError = "Empty number input"
+		iv.lastValidationError = "Empty number input"
 		return false
 	}
 
 	// Check if it's a single character (digit or decimal point)
 	if len(value) > 1 {
-		iv.iv.lastValidationError = "Number input must be a single character"
+		iv.lastValidationError = "Number input must be a single character"
 		return false
 	}
 

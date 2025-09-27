@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-
 	"ccpm-demo/internal/visual"
 )
 

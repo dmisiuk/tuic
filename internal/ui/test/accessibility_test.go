@@ -123,7 +123,7 @@ func TestDirectKeyboardInput(t *testing.T) {
 		numberKeys := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 		for _, num := range numberKeys {
 			t.Run(fmt.Sprintf("number_key_%s", num), func(t *testing.T) {
-				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(num[0])})
+				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{num[0]}})
 				require.NotNil(t, action, "Number key %s should trigger action", num)
 				assert.Equal(t, num, action.Value)
 				assert.Equal(t, "press", action.Action)
@@ -136,7 +136,7 @@ func TestDirectKeyboardInput(t *testing.T) {
 		}
 		for key, expectedValue := range operatorKeys {
 			t.Run(fmt.Sprintf("operator_key_%s", key), func(t *testing.T) {
-				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(key[0])})
+				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{key[0]}})
 				require.NotNil(t, action, "Operator key %s should trigger action", key)
 				assert.Equal(t, expectedValue, action.Value)
 			})
@@ -148,7 +148,7 @@ func TestDirectKeyboardInput(t *testing.T) {
 		}
 		for key, expectedValue := range specialKeys {
 			t.Run(fmt.Sprintf("special_key_%s", key), func(t *testing.T) {
-				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(key[0])})
+				action := grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{key[0]}})
 				require.NotNil(t, action, "Special key %s should trigger action", key)
 				assert.Equal(t, expectedValue, action.Value)
 			})
@@ -363,15 +363,18 @@ func TestMemoryAccessibility(t *testing.T) {
 
 			// Each grid should work independently
 			assert.Equal(t, 18, grid.GetButtonCount())
-			assert.NotNil(t, grid.GetFocusedButton())
+			button, ok := grid.GetFocusedButton()
+			assert.True(t, ok, "Should have focused button")
+			assert.NotNil(t, button, "Focused button should not be nil")
 		}
 
 		// All grids should still work
 		for i, grid := range grids {
 			assert.Equal(t, 18, grid.GetButtonCount(),
 				"Grid %d should maintain button count", i)
-			assert.NotNil(t, grid.GetFocusedButton(),
-				"Grid %d should have focused button", i)
+			button, ok := grid.GetFocusedButton()
+			assert.True(t, ok, "Grid %d should have focused button", i)
+			assert.NotNil(t, button, "Grid %d focused button should not be nil", i)
 		}
 	})
 }

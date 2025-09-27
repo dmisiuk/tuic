@@ -358,3 +358,19 @@ const (
 	DirectionLeft
 	DirectionRight
 )
+
+// String returns the string representation of Direction
+func (d Direction) String() string {
+	switch d {
+	case DirectionUp:
+		return "up"
+	case DirectionDown:
+		return "down"
+	case DirectionLeft:
+		return "left"
+	case DirectionRight:
+		return "right"
+	default:
+		return "unknown"
+	}
+}
