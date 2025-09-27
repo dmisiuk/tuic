@@ -2,7 +2,8 @@
 name: tuic
 status: in-progress
 created: 2025-09-27T19:40:11Z
-progress: 10%
+progress: 66%
+updated: 2025-09-27T22:13:44Z
 prd: ccpm/prds/tuic.md
 github: https://github.com/dmisiuk/tuic/issues/4
 ---
