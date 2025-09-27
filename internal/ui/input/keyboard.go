@@ -45,13 +45,31 @@ type KeyHandler interface {
 // KeyboardHandler implements the KeyHandler interface
 type KeyboardHandler struct {
 	keyBindingManager *KeyBindingManager
+	focusNavigation   *FocusNavigation
 }
 
 // NewKeyboardHandler creates a new keyboard handler
 func NewKeyboardHandler() *KeyboardHandler {
+	controller := NewNavigationController()
 	return &KeyboardHandler{
 		keyBindingManager: NewKeyBindingManager(DefaultKeyBindings()),
+		focusNavigation:   NewFocusNavigation(controller),
 	}
+}
+
+// SetFocusManager sets the focus manager for navigation
+func (kh *KeyboardHandler) SetFocusManager(fm *FocusManager) {
+	if kh.focusNavigation != nil {
+		kh.focusNavigation.controller.SetFocusManager(fm)
+	}
+}
+
+// GetFocusManager returns the current focus manager
+func (kh *KeyboardHandler) GetFocusManager() *FocusManager {
+	if kh.focusNavigation != nil {
+		return kh.focusNavigation.controller.GetFocusManager()
+	}
+	return nil
 }
 
 // HandleKey processes a keyboard event and returns the resulting model and command
@@ -222,49 +240,64 @@ func (kh *KeyboardHandler) handleClear(model ui.Model) (ui.Model, tea.Cmd) {
 
 // handleNavigation handles navigation keys
 func (kh *KeyboardHandler) handleNavigation(model ui.Model, direction string) (ui.Model, tea.Cmd) {
-	// Basic navigation support - will be enhanced with focus management
-	// For now, we'll provide minimal navigation functionality
+	if kh.focusNavigation == nil {
+		return model, nil
+	}
 
+	var navigated bool
 	switch direction {
 	case "up":
-		// Navigate up in button grid
-		// This will be implemented when focus management is available
-		return model, nil
+		navigated = kh.focusNavigation.NavigateUp()
 	case "down":
-		// Navigate down in button grid
-		return model, nil
+		navigated = kh.focusNavigation.NavigateDown()
 	case "left":
-		// Navigate left in button grid
-		return model, nil
+		navigated = kh.focusNavigation.NavigateLeft()
 	case "right":
-		// Navigate right in button grid
-		return model, nil
+		navigated = kh.focusNavigation.NavigateRight()
 	case "tab":
-		// Navigate to next focusable element
-		return model, nil
+		navigated = kh.focusNavigation.NavigateNext()
 	case "shift_tab":
-		// Navigate to previous focusable element
-		return model, nil
+		navigated = kh.focusNavigation.NavigatePrevious()
 	default:
 		return model, nil
 	}
+
+	if navigated {
+		// Print focus state for debugging (can be removed in production)
+		kh.focusNavigation.PrintFocusState()
+	}
+
+	return model, nil
 }
 
 // handleFocusActivate handles focus activation (space key)
 func (kh *KeyboardHandler) handleFocusActivate(model ui.Model) (ui.Model, tea.Cmd) {
-	// Activate the currently focused button
-	// This will be implemented when focus management is available
-	// For now, we'll provide a placeholder implementation
+	if kh.focusNavigation == nil {
+		return model, nil
+	}
 
-	// When focus management is implemented, this will:
-	// 1. Get the currently focused button
-	// 2. Simulate a click on that button
-	// 3. Update the model state accordingly
+	updatedModel, err := kh.focusNavigation.Activate(model)
+	if err != nil {
+		// Handle error - could set error message on model
+		return model, nil
+	}
 
-	return model, nil
+	return updatedModel, nil
 }
 
 // handleQuit handles quit operations
 func (kh *KeyboardHandler) handleQuit(model ui.Model) (ui.Model, tea.Cmd) {
 	return model, tea.Quit
+}
+
+// SetupKeyboardWithFocus creates a keyboard handler with focus management pre-configured
+func SetupKeyboardWithFocus() (*KeyboardHandler, *FocusManager, []*Button) {
+	// Create focus manager and buttons
+	fm, buttons := SetupFocusManager()
+
+	// Create keyboard handler
+	kh := NewKeyboardHandler()
+	kh.SetFocusManager(fm)
+
+	return kh, fm, buttons
 }
