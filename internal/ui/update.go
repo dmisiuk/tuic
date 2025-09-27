@@ -33,10 +33,8 @@ func handleKeyMsg(m Model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// Clear any existing errors
 	m.clearError()
 
+	// First, handle special keys that should always work
 	switch msg.Type {
-	case tea.KeyEnter:
-		return handleEnterKey(m)
-
 	case tea.KeyEsc, tea.KeyCtrlC:
 		m.quitting = true
 		return m, tea.Quit
@@ -59,10 +57,31 @@ func handleKeyMsg(m Model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case tea.KeyDown:
 		return handleDownKey(m)
 
+	case tea.KeyEnter:
+		// Handle button grid first, then fall back to default
+		if action := m.buttonGrid.HandleKeyPress(msg); action != nil {
+			return handleButtonGridAction(m, action)
+		}
+		return handleEnterKey(m)
+
+	case tea.KeySpace:
+		// Handle button grid navigation and activation
+		if action := m.buttonGrid.HandleKeyPress(msg); action != nil {
+			return handleButtonGridAction(m, action)
+		}
+
 	case tea.KeyRunes:
+		// Handle button grid first for direct input
+		if action := m.buttonGrid.HandleKeyPress(msg); action != nil {
+			return handleButtonGridAction(m, action)
+		}
 		return handleRunes(m, msg)
 
 	default:
+		// Try button grid for other keys
+		if action := m.buttonGrid.HandleKeyPress(msg); action != nil {
+			return handleButtonGridAction(m, action)
+		}
 		return m, nil
 	}
 }
@@ -71,6 +90,10 @@ func handleKeyMsg(m Model, msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func handleMouseMsg(m Model, msg tea.MouseMsg) (tea.Model, tea.Cmd) {
 	switch msg.Type {
 	case tea.MouseLeft:
+		// Handle button grid clicks first
+		if action := m.buttonGrid.HandleMouse(msg); action != nil {
+			return handleButtonGridAction(m, action)
+		}
 		return handleMouseClick(m, msg)
 
 	case tea.MouseWheelUp:
@@ -360,6 +383,71 @@ func handleCalculatorButton(m Model, button string) (tea.Model, tea.Cmd) {
 
 	case "⌫":
 		return handleBackspaceKey(m)
+	}
+
+	return m, nil
+}
+
+// handleButtonGridAction processes actions from the button grid
+func handleButtonGridAction(m Model, action *integration.ButtonAction) (tea.Model, tea.Cmd) {
+	m.clearError()
+
+	// Process the button action based on its value
+	switch action.Value {
+	case "clear":
+		// Clear all input and reset calculator state
+		m.input = ""
+		m.output = ""
+		m.cursorPosition = 0
+		m.calculatorState.displayValue = "0"
+		m.calculatorState.operator = ""
+		m.calculatorState.previousValue = 0
+		m.calculatorState.isWaitingForOperand = false
+
+	case "clear_entry":
+		// Clear current input only
+		m.input = ""
+		m.cursorPosition = 0
+		m.calculatorState.displayValue = "0"
+
+	case "backspace":
+		return handleBackspaceKey(m)
+
+	case "+", "-", "*", "/":
+		// Handle operators
+		if m.input != "" {
+			m.input += " " + action.Value + " "
+			m.cursorPosition = len(m.input)
+		}
+
+	case "=":
+		return handleEnterKey(m)
+
+	case ".":
+		// Handle decimal point
+		if m.input == "" {
+			m.input = "0."
+			m.cursorPosition = 2
+		} else {
+			// Check if last character is a digit
+			if len(m.input) > 0 {
+				lastChar := m.input[len(m.input)-1]
+				if lastChar >= '0' && lastChar <= '9' {
+					m.input += "."
+					m.cursorPosition++
+				}
+			}
+		}
+
+	default:
+		// Handle numbers (0-9)
+		if len(action.Value) == 1 && action.Value >= "0" && action.Value <= "9" {
+			m.input += action.Value
+			m.cursorPosition++
+
+			// Update calculator state display
+			m.calculatorState.displayValue = m.input
+		}
 	}
 
 	return m, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"ccpm-demo/internal/calculator"
+	"ccpm-demo/internal/ui/integration"
 )
 
 // Model represents the application state following the MVU pattern
@@ -30,6 +31,9 @@ type Model struct {
 	// UI state
 	ready bool
 	quitting bool
+
+	// Button Grid integration
+	buttonGrid *integration.ButtonGrid
 
 	// Styling
 	styles styles
@@ -59,6 +63,8 @@ type styles struct {
 
 // NewModel creates a new application model
 func NewModel(engine *calculator.Engine) Model {
+	buttonGrid := integration.NewButtonGrid()
+
 	return Model{
 		engine: engine,
 		calculatorState: calculatorState{
@@ -75,6 +81,7 @@ func NewModel(engine *calculator.Engine) Model {
 		historyIndex: -1,
 		ready:        false,
 		quitting:     false,
+		buttonGrid:   buttonGrid,
 		styles:       defaultStyles(),
 	}
 }
@@ -272,4 +279,19 @@ func (m *Model) SetError(err string) {
 // ClearError clears the error message
 func (m *Model) ClearError() {
 	m.error = ""
+}
+
+// GetButtonGrid returns the button grid component
+func (m Model) GetButtonGrid() *integration.ButtonGrid {
+	return m.buttonGrid
+}
+
+// SetButtonGridTheme changes the theme of the button grid
+func (m *Model) SetButtonGridTheme(themeName string) error {
+	return m.buttonGrid.SetTheme(themeName)
+}
+
+// GetButtonGridTheme returns the current button grid theme
+func (m Model) GetButtonGridTheme() string {
+	return m.buttonGrid.GetCurrentTheme()
 }

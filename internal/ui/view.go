@@ -47,9 +47,9 @@ func view(m Model) string {
 		content.WriteString("\n")
 	}
 
-	// Button layout
+	// Button layout using ButtonGrid
 	content.WriteString("\n")
-	content.WriteString(m.renderButtons(styles))
+	content.WriteString(m.buttonGrid.Render(m.width))
 
 	// History (if any)
 	if len(m.history) > 0 {
