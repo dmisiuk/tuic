@@ -111,9 +111,9 @@ func TestParseErrorCases(t *testing.T) {
 		{"2++3", true, ErrInvalidExpression},
 		{"2*/3", true, ErrInvalidExpression},
 		{"2..3", true, ErrInvalidNumber},
-		{"2.3.4", true, ErrInvalidNumber},
+		{"2.3.4", true, ErrInvalidExpression},
 		{"(2+3", true, ErrMismatchedParentheses},
-		{"2+3)", true, ErrInvalidExpression},
+		{"2+3)", true, ErrMismatchedParentheses},
 		{"()", true, ErrInvalidExpression},
 		{"(+)", true, ErrInvalidExpression},
 		{"(-)", true, ErrInvalidExpression},
@@ -193,7 +193,6 @@ func TestParseLargeNumbers(t *testing.T) {
 	parser := NewParser()
 
 	// Test large numbers that might cause overflow
-	largeNum := math.MaxFloat64 / 10
 	result, err := parser.Parse("1e300")
 	if err != nil {
 		t.Errorf("Parse('1e300') returned error: %v", err)

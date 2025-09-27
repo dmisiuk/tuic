@@ -1,7 +1,6 @@
 package calculator
 
 import (
-	"fmt"
 	"math"
 )
 

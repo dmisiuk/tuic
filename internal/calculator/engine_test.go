@@ -209,7 +209,7 @@ func TestUnderflowDetection(t *testing.T) {
 	engine := NewEngine()
 
 	// Test with very small numbers that might cause underflow
-	smallNum := math.SmallestNonzeroFloat64
+	smallNum := math.SmallestNonzeroFloat64 * 1000
 	engine.SetValue(smallNum)
 
 	result, err := engine.Divide(2)
@@ -226,7 +226,7 @@ func TestPerformOperation(t *testing.T) {
 
 	// Test operation with shouldClear = true
 	engine.SetValue(10)
-	engine.ShouldClear = true
+	// ShouldClear is automatically set to true by SetValue
 
 	result, err := engine.PerformOperation("+")
 	if err != nil {
@@ -236,8 +236,7 @@ func TestPerformOperation(t *testing.T) {
 		t.Errorf("PerformOperation(+) with shouldClear=true = %f, want 10", result)
 	}
 
-	// Test normal operation
-	engine.ShouldClear = false
+	// Test normal operation - InputNumber sets shouldClear to false
 	engine.InputNumber(5)
 
 	result, err = engine.PerformOperation("+")

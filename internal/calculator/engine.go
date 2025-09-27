@@ -1,8 +1,6 @@
 package calculator
 
-import (
-	"math"
-)
+import ()
 
 // Engine represents the calculator engine state
 type Engine struct {
