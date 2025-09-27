@@ -485,7 +485,7 @@ func (fm *FocusManager) GetFocusables() []Focusable {
 }
 
 // absIntFocus returns the absolute value of an integer
-func absIntFocusFocus(x int) int {
+func absIntFocus(x int) int {
 	if x < 0 {
 		return -x
 	}

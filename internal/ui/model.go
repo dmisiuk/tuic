@@ -225,3 +225,51 @@ func (m Model) getDisplayHeight() int {
 	}
 	return 30
 }
+
+// GetInput returns the current input string
+func (m Model) GetInput() string {
+	return m.input
+}
+
+// SetInput sets the input string and updates cursor position
+func (m *Model) SetInput(input string) {
+	m.input = input
+	m.cursorPosition = len(input)
+}
+
+// GetOutput returns the current output string
+func (m Model) GetOutput() string {
+	return m.output
+}
+
+// SetOutput sets the output string
+func (m *Model) SetOutput(output string) {
+	m.output = output
+}
+
+// GetCursorPosition returns the current cursor position
+func (m Model) GetCursorPosition() int {
+	return m.cursorPosition
+}
+
+// SetCursorPosition sets the cursor position
+func (m *Model) SetCursorPosition(pos int) {
+	if pos >= 0 && pos <= len(m.input) {
+		m.cursorPosition = pos
+	}
+}
+
+// GetError returns the current error message
+func (m Model) GetError() string {
+	return m.error
+}
+
+// SetError sets the error message
+func (m *Model) SetError(err string) {
+	m.error = err
+}
+
+// ClearError clears the error message
+func (m *Model) ClearError() {
+	m.error = ""
+}

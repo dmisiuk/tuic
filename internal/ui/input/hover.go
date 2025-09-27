@@ -1,6 +1,8 @@
 package input
 
 import (
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 

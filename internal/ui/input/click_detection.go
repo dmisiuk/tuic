@@ -224,8 +224,8 @@ func (cd *ClickDetector) HandleMouseMove(x, y int, button tea.MouseButton, times
 	}
 
 	// Check if this movement constitutes a drag
-	dx := abs(x - cd.state.PressedX)
-	dy := abs(y - cd.state.PressedY)
+	dx := absInt(x - cd.state.PressedX)
+	dy := absInt(y - cd.state.PressedY)
 
 	if dx > cd.clickThreshold || dy > cd.clickThreshold {
 		// Movement exceeded threshold, consider this a drag
@@ -280,8 +280,8 @@ func (cd *ClickDetector) isValidClick(buttonID string, x, y int) bool {
 	}
 
 	// Check if release position is within tolerance of press position
-	dx := abs(x - cd.state.PressedX)
-	dy := abs(y - cd.state.PressedY)
+	dx := absInt(x - cd.state.PressedX)
+	dy := absInt(y - cd.state.PressedY)
 
 	return dx <= cd.clickTolerance && dy <= cd.clickTolerance
 }
@@ -321,7 +321,7 @@ func (cd *ClickDetector) handleClickDetection(buttonID string, x, y int, button 
 // determineClickType determines the type of click based on timing and position
 func (cd *ClickDetector) determineClickType(buttonID string, x, y int, timestamp int64) ClickType {
 	timeSinceLastClick := time.Duration(timestamp - cd.lastClickTime)
-	distanceFromLastClick := abs(x-cd.lastClickPosition.X) + abs(y-cd.lastClickPosition.Y)
+	distanceFromLastClick := absInt(x-cd.lastClickPosition.X) + absInt(y-cd.lastClickPosition.Y)
 
 	// Check if this is a multiple click
 	if timeSinceLastClick <= cd.doubleClickDelay &&
@@ -399,7 +399,7 @@ type DragEvent struct {
 }
 
 // Helper function for absolute value
-func abs(x int) int {
+func absInt(x int) int {
 	if x < 0 {
 		return -x
 	}

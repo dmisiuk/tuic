@@ -282,7 +282,7 @@ func (fm *FeedbackManager) Update() {
 	now := time.Now()
 
 	// Update button animations
-	for key, anim := range fm.activeAnimations {
+	for animKey, anim := range fm.activeAnimations {
 		if anim.Completed {
 			continue
 		}
@@ -308,9 +308,9 @@ func (fm *FeedbackManager) Update() {
 	}
 
 	// Remove completed animations
-	for key, anim := range fm.activeAnimations {
+	for animKey, anim := range fm.activeAnimations {
 		if anim.Completed {
-			delete(fm.activeAnimations, key)
+			delete(fm.activeAnimations, animKey)
 		}
 	}
 

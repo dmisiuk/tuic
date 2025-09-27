@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/key"
 )
 
@@ -100,7 +101,7 @@ func newKeyBindings() keyMap {
 }
 
 // HandleKeyPress processes a keyboard input and returns the action taken
-func (kh *KeyboardHandler) HandleKeyPress(msg key.Msg) (ButtonAction, bool) {
+func (kh *KeyboardHandler) HandleKeyPress(msg tea.KeyMsg) (ButtonAction, bool) {
 	switch {
 	case kh.keyBindings.up.Matches(msg):
 		return kh.handleNavigation(DirectionUp)
@@ -319,7 +320,7 @@ func (kh *KeyboardHandler) handleClearKey() (ButtonAction, bool) {
 }
 
 // handleDirectKeyMapping processes direct key presses for numbers and operators
-func (kh *KeyboardHandler) handleDirectKeyMapping(msg key.Msg) (ButtonAction, bool) {
+func (kh *KeyboardHandler) handleDirectKeyMapping(msg tea.KeyMsg) (ButtonAction, bool) {
 	if kh.focusManager == nil {
 		return ButtonAction{}, false
 	}
@@ -486,7 +487,7 @@ func (kh *KeyboardHandler) GetHelpText() string {
 }
 
 // HandleSpecialNavigation handles special navigation keys (Home, End, PageUp, PageDown)
-func (kh *KeyboardHandler) HandleSpecialNavigation(msg key.Msg) (ButtonAction, bool) {
+func (kh *KeyboardHandler) HandleSpecialNavigation(msg tea.KeyMsg) (ButtonAction, bool) {
 	if kh.focusManager == nil {
 		return ButtonAction{}, false
 	}
@@ -507,12 +508,12 @@ func (kh *KeyboardHandler) HandleSpecialNavigation(msg key.Msg) (ButtonAction, b
 }
 
 // isHomeKey checks if the key is Home
-func (kh *KeyboardHandler) isHomeKey(msg key.Msg) bool {
+func (kh *KeyboardHandler) isHomeKey(msg tea.KeyMsg) bool {
 	return msg.Type == key.KeyHome
 }
 
 // isEndKey checks if the key is End
-func (kh *KeyboardHandler) isEndKey(msg key.Msg) bool {
+func (kh *KeyboardHandler) isEndKey(msg tea.KeyMsg) bool {
 	return msg.Type == key.KeyEnd
 }
 
@@ -658,7 +659,7 @@ func (kh *KeyboardHandler) handlePageDownKey() (ButtonAction, bool) {
 }
 
 // EnhancedHandleKeyPress extends HandleKeyPress to include special navigation
-func (kh *KeyboardHandler) EnhancedHandleKeyPress(msg key.Msg) (ButtonAction, bool) {
+func (kh *KeyboardHandler) EnhancedHandleKeyPress(msg tea.KeyMsg) (ButtonAction, bool) {
 	// First try special navigation
 	if action, handled := kh.HandleSpecialNavigation(msg); handled {
 		return action, true
@@ -722,45 +723,6 @@ func (kh *KeyboardHandler) HandleBackspace() (ButtonAction, bool) {
 	return kh.handleClearKey()
 }
 
-// isKeyMatch checks if a key press matches a button (with enhanced mappings)
-func (kh *KeyboardHandler) isKeyMatch(keyStr string, button *Button) bool {
-	buttonValue := button.GetValue()
-
-	// Check shortcut bindings first
-	if shortcutValue, exists := shortcutBindings[keyStr]; exists {
-		return buttonValue == shortcutValue
-	}
-
-	// Number mappings
-	switch keyStr {
-	case "0", "1", "2", "3", "4", "5", "6", "7", "8", "9":
-		return buttonValue == keyStr
-	}
-
-	// Operator mappings
-	switch keyStr {
-	case "+", "-", "*", "/":
-		return buttonValue == keyStr
-	case "x", "X":
-		return buttonValue == "*"
-	}
-
-	// Special function mappings
-	switch keyStr {
-	case "=", "enter", "return":
-		return buttonValue == "="
-	case "c", "C", "escape", "esc":
-		return buttonValue == "C" || buttonValue == "CE"
-	case ".":
-		return buttonValue == "."
-	case "backspace":
-		return buttonValue == "backspace" || buttonValue == "CE"
-	case "delete":
-		return buttonValue == "CE"
-	}
-
-	return false
-}
 
 // GetQuickReference returns a quick reference card for keyboard shortcuts
 func (kh *KeyboardHandler) GetQuickReference() string {
