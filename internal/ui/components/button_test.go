@@ -477,6 +477,148 @@ func TestButton_RenderWithCustomDimensions(t *testing.T) {
 	assert.True(t, strings.Contains(rendered, "0"))
 }
 
+func TestButton_Blur(t *testing.T) {
+	config := ButtonConfig{
+		Label: "Test",
+		Type:  TypeNumber,
+		Value: "1",
+	}
+
+	button := NewButton(config)
+
+	// Test blur from focused state
+	err := button.Focus()
+	assert.NoError(t, err)
+	assert.Equal(t, StateFocused, button.GetState())
+
+	err = button.Blur()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, button.GetState())
+
+	// Test blur from normal state (should be no-op)
+	err = button.Blur()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, button.GetState())
+}
+
+func TestButton_StyleMethods(t *testing.T) {
+	config := ButtonConfig{
+		Label: "+",
+		Type:  TypeOperator,
+		Value: "+",
+	}
+
+	button := NewButton(config)
+
+	// Test getOperatorStyle - need to access private method via reflection or indirect testing
+	// Instead, we'll test the rendering which calls these methods
+	button.stateManager.currentState = StateFocused
+	rendered := button.Render()
+	assert.Contains(t, rendered, "+")
+
+	// Create buttons of different types to test different style methods
+	numberButton := NewButton(ButtonConfig{Label: "1", Type: TypeNumber, Value: "1"})
+	specialButton := NewButton(ButtonConfig{Label: "=", Type: TypeSpecial, Value: "="})
+
+	// Render each button to trigger their respective style methods
+	numRendered := numberButton.Render()
+	opRendered := button.Render()
+	specRendered := specialButton.Render()
+
+	assert.Contains(t, numRendered, "1")
+	assert.Contains(t, opRendered, "+")
+	assert.Contains(t, specRendered, "=")
+}
+
+func TestButtonStateManager_ReleaseAndBlur_EdgeCases(t *testing.T) {
+	config := ButtonConfig{
+		Label: "Test",
+		Type:  TypeNumber,
+		Value: "1",
+	}
+	sm := NewButtonStateManager(TypeNumber, config)
+
+	// Test Release from non-pressed state (should be no-op)
+	err := sm.Release()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+
+	// Test Release from pressed state
+	err = sm.SetState(StatePressed)
+	assert.NoError(t, err)
+	err = sm.Release()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+
+	// Test Blur from non-focused state (should be no-op)
+	err = sm.Blur()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+
+	// Test Blur from focused state
+	err = sm.SetState(StateFocused)
+	assert.NoError(t, err)
+	err = sm.Blur()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+
+	// Test Enable from non-disabled state (should be no-op)
+	err = sm.Enable()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+
+	// Test Enable from disabled state
+	err = sm.SetState(StateDisabled)
+	assert.NoError(t, err)
+	err = sm.Enable()
+	assert.NoError(t, err)
+	assert.Equal(t, StateNormal, sm.State())
+}
+
+func TestButtonStateManager_TransitionCoverage(t *testing.T) {
+	config := ButtonConfig{
+		Label: "Test",
+		Type:  TypeNumber,
+		Value: "1",
+	}
+	sm := NewButtonStateManager(TypeNumber, config)
+
+	// Test all possible transitions to improve isValidTransition coverage
+	testTransitions := []struct {
+		from ButtonState
+		to   ButtonState
+		valid bool
+	}{
+		{StateNormal, StateFocused, true},
+		{StateNormal, StatePressed, true},
+		{StateNormal, StateDisabled, true},
+		{StateFocused, StateNormal, true},
+		{StateFocused, StatePressed, true},
+		{StateFocused, StateDisabled, true},
+		{StatePressed, StateNormal, true},
+		{StatePressed, StateFocused, true},
+		{StatePressed, StateDisabled, true},
+		{StateDisabled, StateNormal, true},
+		{StateDisabled, StateFocused, true},
+		{StateDisabled, StatePressed, false}, // Invalid transition
+	}
+
+	for _, tt := range testTransitions {
+		t.Run(fmt.Sprintf("%s_to_%s", tt.from, tt.to), func(t *testing.T) {
+			sm.currentState = tt.from
+			err := sm.SetState(tt.to)
+
+			if tt.valid {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.to, sm.State())
+			} else {
+				assert.Error(t, err)
+				assert.Equal(t, tt.from, sm.State()) // State should not change
+			}
+		})
+	}
+}
+
 func TestInvalidStateTransitionError(t *testing.T) {
 	err := &InvalidStateTransitionError{
 		From: StateNormal,
@@ -493,6 +635,55 @@ func TestInvalidStateTransitionError(t *testing.T) {
 	// Test with non-matching error type
 	var generalErr error = &InvalidStateTransitionError{}
 	assert.True(t, err.Is(generalErr))
+}
+
+func TestButtonRenderer_DefaultStyleCoverage(t *testing.T) {
+	// Create a button with unknown type to trigger getDefaultStyle
+	config := ButtonConfig{
+		Label:  "X",
+		Type:   ButtonType(99), // Unknown type
+		Value:  "X",
+		Width:  5,
+		Height: 2,
+	}
+
+	button := NewButton(config)
+	renderer := NewButtonRenderer(DefaultButtonTheme())
+
+	// Test rendering with unknown button type (triggers getDefaultStyle)
+	states := []ButtonState{StateNormal, StateFocused, StatePressed, StateDisabled}
+
+	for _, state := range states {
+		t.Run(state.String(), func(t *testing.T) {
+			button.stateManager.currentState = state
+			rendered := renderer.Render(button)
+			assert.Contains(t, rendered, "X")
+		})
+	}
+}
+
+func TestButton_RenderUnknownButtonType(t *testing.T) {
+	// Create a button with unknown type to trigger getDefaultStyle in button
+	config := ButtonConfig{
+		Label:  "?",
+		Type:   ButtonType(99), // Unknown type
+		Value:  "?",
+		Width:  5,
+		Height: 2,
+	}
+
+	button := NewButton(config)
+
+	// Test rendering with unknown button type (triggers getDefaultStyle)
+	states := []ButtonState{StateNormal, StateFocused, StatePressed, StateDisabled}
+
+	for _, state := range states {
+		t.Run(state.String(), func(t *testing.T) {
+			button.stateManager.currentState = state
+			rendered := button.Render()
+			assert.Contains(t, rendered, "?")
+		})
+	}
 }
 
 // testStates is a helper variable for testing all button states
