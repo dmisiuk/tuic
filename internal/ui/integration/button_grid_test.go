@@ -26,7 +26,7 @@ func TestNewButtonGrid(t *testing.T) {
 
 		// Check that buttons were created
 		assert.Greater(t, len(grid.buttons), 0)
-		assert.Equal(t, 18, len(grid.buttons)) // 4x5 grid minus 2 empty cells
+		assert.Equal(t, 19, len(grid.buttons)) // 19 button definitions in the layout
 
 		// Check default theme
 		assert.Equal(t, "retro-casio", grid.GetCurrentTheme())
@@ -35,7 +35,7 @@ func TestNewButtonGrid(t *testing.T) {
 
 func TestNewButtonGridWithTheme(t *testing.T) {
 	t.Run("creates button grid with specific theme", func(t *testing.T) {
-		grid, err := NewButtonGridWithTheme("modern")
+		grid, err := NewButtonGridWithTheme("nonexistent")
 
 		// Should succeed even if theme doesn't exist (falls back to default)
 		require.NoError(t, err)
@@ -179,7 +179,7 @@ func TestButtonGridMouseHandling(t *testing.T) {
 			Y:    15,
 		}
 
-		action := grid.HandleMouse(msg)
+		_ = grid.HandleMouse(msg)
 		// This might be nil due to coordinate calculation complexity
 		// but the method should not panic
 		// In a real test, we'd need to calculate exact coordinates
@@ -215,10 +215,10 @@ func TestButtonGridButtonManagement(t *testing.T) {
 
 	t.Run("returns button count", func(t *testing.T) {
 		grid := NewButtonGrid()
-		assert.Equal(t, 18, grid.GetButtonCount())
+		assert.Equal(t, 19, grid.GetButtonCount())
 
 		allButtons := grid.GetButtons()
-		assert.Equal(t, 18, len(allButtons))
+		assert.Equal(t, 19, len(allButtons))
 		assert.Equal(t, grid.buttons, allButtons)
 	})
 
@@ -311,7 +311,7 @@ func TestButtonGridStringRepresentation(t *testing.T) {
 		str := grid.String()
 		assert.Contains(t, str, "ButtonGrid")
 		assert.Contains(t, str, "4x5")
-		assert.Contains(t, str, "18") // Button count
+		assert.Contains(t, str, "19") // Button count
 		assert.Contains(t, str, "retro-casio") // Theme
 		assert.Contains(t, str, "button_0_0") // Initial focus
 	})
