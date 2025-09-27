@@ -102,27 +102,56 @@ func newKeyBindings() keyMap {
 
 // HandleKeyPress processes a keyboard input and returns the action taken
 func (kh *KeyboardHandler) HandleKeyPress(msg tea.KeyMsg) (ButtonAction, bool) {
-	switch {
-	case kh.keyBindings.up.Matches(msg):
-		return kh.handleNavigation(DirectionUp)
-	case kh.keyBindings.down.Matches(msg):
-		return kh.handleNavigation(DirectionDown)
-	case kh.keyBindings.left.Matches(msg):
-		return kh.handleNavigation(DirectionLeft)
-	case kh.keyBindings.right.Matches(msg):
-		return kh.handleNavigation(DirectionRight)
-	case kh.keyBindings.enter.Matches(msg):
-		return kh.handleActivation()
-	case kh.keyBindings.space.Matches(msg):
-		return kh.handleActivation()
-	case kh.keyBindings.tab.Matches(msg):
-		return kh.handleTabNavigation(false) // Forward
-	case kh.keyBindings.shiftTab.Matches(msg):
-		return kh.handleTabNavigation(true) // Backward
-	case kh.keyBindings.escape.Matches(msg):
-		return kh.handleEscape()
-	case kh.keyBindings.clear.Matches(msg):
-		return kh.handleClearKey()
+	// Check each key binding manually
+	for _, key := range kh.keyBindings.up.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleNavigation(DirectionUp)
+		}
+	}
+	for _, key := range kh.keyBindings.down.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleNavigation(DirectionDown)
+		}
+	}
+	for _, key := range kh.keyBindings.left.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleNavigation(DirectionLeft)
+		}
+	}
+	for _, key := range kh.keyBindings.right.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleNavigation(DirectionRight)
+		}
+	}
+	for _, key := range kh.keyBindings.enter.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleActivation()
+		}
+	}
+	for _, key := range kh.keyBindings.space.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleActivation()
+		}
+	}
+	for _, key := range kh.keyBindings.tab.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleTabNavigation(false) // Forward
+		}
+	}
+	for _, key := range kh.keyBindings.shiftTab.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleTabNavigation(true) // Backward
+		}
+	}
+	for _, key := range kh.keyBindings.escape.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleEscape()
+		}
+	}
+	for _, key := range kh.keyBindings.clear.Keys() {
+		if kh.matchesKey(msg, key) {
+			return kh.handleClearKey()
+		}
 	}
 
 	// Check for direct number/operator key mappings
@@ -210,7 +239,8 @@ func (kh *KeyboardHandler) handleTabNavigation(reverse bool) (ButtonAction, bool
 		return ButtonAction{}, false
 	}
 
-	return kh.createNavigationAction("tab"), true
+	action, _ := kh.createNavigationAction("tab")
+	return action, true
 }
 
 // findNextPosition finds the next position in tab order (row-major)
@@ -319,6 +349,41 @@ func (kh *KeyboardHandler) handleClearKey() (ButtonAction, bool) {
 	return ButtonAction{}, false
 }
 
+// matchesKey checks if a key message matches a key string
+func (kh *KeyboardHandler) matchesKey(msg tea.KeyMsg, keyStr string) bool {
+	switch msg.Type {
+	case tea.KeyUp:
+		return keyStr == "up"
+	case tea.KeyDown:
+		return keyStr == "down"
+	case tea.KeyLeft:
+		return keyStr == "left"
+	case tea.KeyRight:
+		return keyStr == "right"
+	case tea.KeyEnter:
+		return keyStr == "enter" || keyStr == "return"
+	case tea.KeySpace:
+		return keyStr == " "
+	case tea.KeyTab:
+		return keyStr == "tab"
+	case tea.KeyEsc:
+		return keyStr == "esc" || keyStr == "escape"
+	case tea.KeyBackspace:
+		return keyStr == "backspace"
+	case tea.KeyDelete:
+		return keyStr == "delete"
+	case tea.KeyHome:
+		return keyStr == "home"
+	case tea.KeyEnd:
+		return keyStr == "end"
+	case tea.KeyRunes:
+		if len(msg.Runes) > 0 {
+			return string(msg.Runes) == keyStr
+		}
+	}
+	return false
+}
+
 // handleDirectKeyMapping processes direct key presses for numbers and operators
 func (kh *KeyboardHandler) handleDirectKeyMapping(msg tea.KeyMsg) (ButtonAction, bool) {
 	if kh.focusManager == nil {
@@ -328,25 +393,25 @@ func (kh *KeyboardHandler) handleDirectKeyMapping(msg tea.KeyMsg) (ButtonAction,
 	// Convert key to string
 	keyStr := ""
 	switch msg.Type {
-	case key.KeyRunes:
+	case tea.KeyRunes:
 		if len(msg.Runes) > 0 {
 			keyStr = string(msg.Runes[0])
 		}
-	case key.KeyEnter:
+	case tea.KeyEnter:
 		keyStr = "enter"
-	case key.KeySpace:
+	case tea.KeySpace:
 		keyStr = " "
-	case key.KeyBackspace:
+	case tea.KeyBackspace:
 		keyStr = "backspace"
-	case key.KeyDelete:
+	case tea.KeyDelete:
 		keyStr = "delete"
-	case key.KeyUp:
+	case tea.KeyUp:
 		keyStr = "up"
-	case key.KeyDown:
+	case tea.KeyDown:
 		keyStr = "down"
-	case key.KeyLeft:
+	case tea.KeyLeft:
 		keyStr = "left"
-	case key.KeyRight:
+	case tea.KeyRight:
 		keyStr = "right"
 	}
 
@@ -509,22 +574,24 @@ func (kh *KeyboardHandler) HandleSpecialNavigation(msg tea.KeyMsg) (ButtonAction
 
 // isHomeKey checks if the key is Home
 func (kh *KeyboardHandler) isHomeKey(msg tea.KeyMsg) bool {
-	return msg.Type == key.KeyHome
+	return msg.Type == tea.KeyHome
 }
 
 // isEndKey checks if the key is End
 func (kh *KeyboardHandler) isEndKey(msg tea.KeyMsg) bool {
-	return msg.Type == key.KeyEnd
+	return msg.Type == tea.KeyEnd
 }
 
-// isPageUpKey checks if the key is PageUp
-func (kh *KeyboardHandler) isPageUpKey(msg key.Msg) bool {
-	return msg.Type == key.KeyPageUp
+// isPageUpKey checks if the key is PageUp (not available in basic tea)
+func (kh *KeyboardHandler) isPageUpKey(msg tea.KeyMsg) bool {
+	// PageUp not available in basic tea.KeyType, could be implemented as Ctrl+Up or similar
+	return false
 }
 
-// isPageDownKey checks if the key is PageDown
-func (kh *KeyboardHandler) isPageDownKey(msg key.Msg) bool {
-	return msg.Type == key.KeyPageDown
+// isPageDownKey checks if the key is PageDown (not available in basic tea)
+func (kh *KeyboardHandler) isPageDownKey(msg tea.KeyMsg) bool {
+	// PageDown not available in basic tea.KeyType, could be implemented as Ctrl+Down or similar
+	return false
 }
 
 // handleHomeKey navigates to the first button

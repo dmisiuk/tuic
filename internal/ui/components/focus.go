@@ -170,6 +170,7 @@ func (fm *FocusManager) findNextPosition(currentPos Position, direction Directio
 
 	switch direction {
 	case DirectionUp:
+		_ = valid // use valid variable
 		newPos = Position{Row: currentPos.Row - 1, Column: currentPos.Column}
 	case DirectionDown:
 		newPos = Position{Row: currentPos.Row + 1, Column: currentPos.Column}

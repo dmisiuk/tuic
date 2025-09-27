@@ -282,7 +282,7 @@ func (fm *FeedbackManager) Update() {
 	now := time.Now()
 
 	// Update button animations
-	for animKey, anim := range fm.activeAnimations {
+	for _, anim := range fm.activeAnimations {
 		if anim.Completed {
 			continue
 		}
@@ -311,6 +311,7 @@ func (fm *FeedbackManager) Update() {
 	for animKey, anim := range fm.activeAnimations {
 		if anim.Completed {
 			delete(fm.activeAnimations, animKey)
+			_ = anim // use anim variable
 		}
 	}
 
@@ -341,6 +342,7 @@ func (fm *FeedbackManager) applyPressEffect(anim *ButtonAnimation) {
 	intensity := anim.Properties["intensity"].(float64)
 
 	// Calculate visual intensity based on animation progress
+	_ = intensity // use intensity variable
 	// For press animation, we want to peak at 50% and then return
 	var visualIntensity float64
 	if anim.Progress < 0.5 {

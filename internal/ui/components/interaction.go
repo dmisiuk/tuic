@@ -1,8 +1,9 @@
 package components
 
 import (
-	"fmt"
 	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // InteractionHandler manages all user interactions with the button grid
@@ -80,10 +81,10 @@ func NewInteractionHandler(focusManager *FocusManager) *InteractionHandler {
 
 // HandleKeyEvent processes keyboard input
 func (ih *InteractionHandler) HandleKeyEvent(keyEvent interface{}) (ButtonAction, bool) {
-	// Convert to key.Msg if needed
-	var keyMsg key.Msg
+	// Convert to tea.KeyMsg if needed
+	var keyMsg tea.KeyMsg
 	switch event := keyEvent.(type) {
-	case key.Msg:
+	case tea.KeyMsg:
 		keyMsg = event
 	default:
 		return ButtonAction{}, false
@@ -432,6 +433,7 @@ func (ch *ClickHandler) handleRelease(mouseEvent MouseEvent, gridLayout *GridLay
 	if button == nil {
 		return ButtonAction{}, false
 	}
+	_ = position // use position variable
 
 	// Release the button
 	if button.IsPressed() {
