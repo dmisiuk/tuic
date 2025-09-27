@@ -45,9 +45,11 @@ else
   closed=0
   blocked=0
 
-  # Use find to safely iterate over task files
+  # Use find to safely iterate over task files (excluding analysis files)
   for task_file in "$epic_dir"/[0-9]*.md; do
     [ -f "$task_file" ] || continue
+    # Skip analysis files
+    [[ "$task_file" =~ -analysis\.md$ ]] && continue
     ((total++))
 
     task_status=$(grep "^status:" "$task_file" | head -1 | sed 's/^status: *//')
