@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/dzmitrymisiuk/ccpm-demo/internal/ui/styles"
 )
 
 // Button represents an interactive button component with state management
@@ -36,11 +37,13 @@ type ButtonRenderer struct {
 // NewButton creates a new button component with the specified configuration
 func NewButton(config ButtonConfig) *Button {
 	stateManager := NewButtonStateManager(config.Type, config)
+	themeManager := styles.NewThemeManager()
+	buttonTheme := themeManager.GetButtonTheme()
 
 	return &Button{
 		stateManager: stateManager,
 		styles:       &lipgloss.Style{},
-		theme:        DefaultButtonTheme(),
+		theme:        convertThemeManagerToButtonTheme(buttonTheme),
 	}
 }
 
@@ -286,7 +289,32 @@ func (bts ButtonTypeStyle) getStyleForState(state ButtonState) lipgloss.Style {
 	}
 }
 
+// convertThemeManagerToButtonTheme converts the new theme manager format to the legacy ButtonTheme format
+func convertThemeManagerToButtonTheme(theme styles.ButtonTheme) ButtonTheme {
+	return ButtonTheme{
+		Number: ButtonTypeStyle{
+			Normal:   theme.Number.Normal,
+			Focused:  theme.Number.Focused,
+			Pressed:  theme.Number.Pressed,
+			Disabled: theme.Number.Disabled,
+		},
+		Operator: ButtonTypeStyle{
+			Normal:   theme.Operator.Normal,
+			Focused:  theme.Operator.Focused,
+			Pressed:  theme.Operator.Pressed,
+			Disabled: theme.Operator.Disabled,
+		},
+		Special: ButtonTypeStyle{
+			Normal:   theme.Special.Normal,
+			Focused:  theme.Special.Focused,
+			Pressed:  theme.Special.Pressed,
+			Disabled: theme.Special.Disabled,
+		},
+	}
+}
+
 // DefaultButtonTheme returns the default retro Casio-inspired button theme
+// DEPRECATED: Use styles.NewThemeManager().GetButtonTheme() instead
 func DefaultButtonTheme() ButtonTheme {
 	return ButtonTheme{
 		Number: ButtonTypeStyle{
