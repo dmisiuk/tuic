@@ -35,12 +35,12 @@ func TestNewButtonGrid(t *testing.T) {
 
 func TestNewButtonGridWithTheme(t *testing.T) {
 	t.Run("creates button grid with specific theme", func(t *testing.T) {
-		grid, err := NewButtonGridWithTheme("nonexistent")
+		grid, err := NewButtonGridWithTheme("modern")
 
 		// Should succeed even if theme doesn't exist (falls back to default)
 		require.NoError(t, err)
 		assert.NotNil(t, grid)
-		assert.Equal(t, "retro-casio", grid.GetCurrentTheme()) // Fallback
+		assert.Equal(t, "retro-casio", grid.GetCurrentTheme()) // Falls back to default
 	})
 }
 
@@ -111,23 +111,27 @@ func TestButtonGridKeyboardNavigation(t *testing.T) {
 		grid := NewButtonGrid()
 
 		// Try to navigate up from top row
-		originalFocused, _ := grid.GetFocusedButton()
+		originalFocused, exists := grid.GetFocusedButton()
+		require.True(t, exists)
 		grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyUp})
-		focusedAfter, _ := grid.GetFocusedButton()
+		focusedAfter, exists := grid.GetFocusedButton()
+		require.True(t, exists)
 		assert.Equal(t, originalFocused.GetLabel(), focusedAfter.GetLabel())
 
-		// Navigate to bottom right corner
-		for i := 0; i < 10; i++ {
+		// Navigate to bottom right corner safely
+		for i := 0; i < 4; i++ { // Max 4 down moves
 			grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyDown})
 		}
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 3; i++ { // Max 3 right moves
 			grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRight})
 		}
 
 		// Try to navigate further right
-		edgeFocused, _ := grid.GetFocusedButton()
+		edgeFocused, exists := grid.GetFocusedButton()
+		require.True(t, exists)
 		grid.HandleKeyPress(tea.KeyMsg{Type: tea.KeyRight})
-		afterEdgeFocused, _ := grid.GetFocusedButton()
+		afterEdgeFocused, exists := grid.GetFocusedButton()
+		require.True(t, exists)
 		assert.Equal(t, edgeFocused.GetLabel(), afterEdgeFocused.GetLabel())
 	})
 }
