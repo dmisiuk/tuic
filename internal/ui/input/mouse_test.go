@@ -234,7 +234,7 @@ func TestMouseHandler_HandleMousePress(t *testing.T) {
 	handler := NewMouseHandler()
 	handler.RegisterButton("test", 10, 10, 20, 10, ButtonAction{})
 
-	msg := tea.MouseMsg{Type: tea.MousePress, X: 15, Y: 15, Button: tea.MouseButtonLeft}
+	msg := tea.MouseMsg{Type: tea.MouseLeft, X: 15, Y: 15}
 	events := handler.HandleMessage(msg)
 
 	if len(events) != 1 {
@@ -258,7 +258,7 @@ func TestMouseHandler_HandleMouseRelease(t *testing.T) {
 	handler.RegisterButton("test", 10, 10, 20, 10, ButtonAction{})
 
 	// First press to set up the state
-	handler.HandleMessage(tea.MouseMsg{Type: tea.MousePress, X: 15, Y: 15})
+	handler.HandleMessage(tea.MouseMsg{Type: tea.MouseLeft, X: 15, Y: 15})
 
 	msg := tea.MouseMsg{Type: tea.MouseRelease, X: 15, Y: 15}
 	events := handler.HandleMessage(msg)

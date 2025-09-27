@@ -72,7 +72,7 @@ func (mh *MouseHandler) HandleMessage(msg tea.Msg) []tea.Msg {
 	switch mouseMsg.Type {
 	case tea.MouseMotion:
 		events = mh.handleMouseMove(mouseMsg)
-	case tea.MousePress:
+	case tea.MouseLeft, tea.MouseRight, tea.MouseMiddle:
 		events = mh.handleMousePress(mouseMsg)
 	case tea.MouseRelease:
 		events = mh.handleMouseRelease(mouseMsg)

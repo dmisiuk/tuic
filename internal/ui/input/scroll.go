@@ -1,6 +1,8 @@
 package input
 
 import (
+	"math"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -332,8 +334,5 @@ func (sm *ScrollManager) ClearActions() {
 
 // Helper function for absolute value
 func abs(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-	return x
+	return math.Abs(x)
 }
