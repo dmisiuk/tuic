@@ -1,6 +1,8 @@
 package calculator
 
-import ()
+import (
+	"sync"
+)
 
 // Engine represents the calculator engine state
 type Engine struct {
@@ -191,4 +193,72 @@ func (e *Engine) PerformOperation(op string) (float64, error) {
 
 	e.entryValue = result
 	return result, nil
+}
+
+// Calculator provides a high-level interface with variable support
+type Calculator struct {
+	engine    *Engine
+	variables map[string]float64
+	mu        sync.RWMutex
+}
+
+// NewCalculator creates a new calculator with variable support
+func NewCalculator() *Calculator {
+	return &Calculator{
+		engine:    NewEngine(),
+		variables: make(map[string]float64),
+	}
+}
+
+// Evaluate evaluates a mathematical expression with variable support
+func (c *Calculator) Evaluate(expression string) (float64, error) {
+	// Simple variable substitution for now
+	c.mu.RLock()
+	for name, value := range c.variables {
+		expression = replaceVariable(expression, name, value)
+	}
+	c.mu.RUnlock()
+
+	return c.engine.Evaluate(expression)
+}
+
+// SetVariable sets a variable value
+func (c *Calculator) SetVariable(name string, value float64) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.variables[name] = value
+}
+
+// GetVariable gets a variable value
+func (c *Calculator) GetVariable(name string) (float64, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	value, exists := c.variables[name]
+	return value, exists
+}
+
+// GetVariables returns all variables
+func (c *Calculator) GetVariables() map[string]float64 {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	// Return a copy to avoid concurrent modification
+	vars := make(map[string]float64)
+	for k, v := range c.variables {
+		vars[k] = v
+	}
+	return vars
+}
+
+// ClearVariables clears all variables
+func (c *Calculator) ClearVariables() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.variables = make(map[string]float64)
+}
+
+// replaceVariable replaces variable names with their values in expressions
+func replaceVariable(expr, name string, value float64) string {
+	// Simple implementation - in production this would need proper parsing
+	return expr // For now, we'll implement this in the parser
 }
