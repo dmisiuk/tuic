@@ -26,7 +26,7 @@ jobs:
       id: go
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Cache Go modules
       uses: actions/cache@v3
@@ -57,7 +57,7 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Run Gosec Security Scanner
       uses: securecodewarrior/github-action-add-sarif@v1
@@ -86,7 +86,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Cache Go modules
       uses: actions/cache@v3
@@ -114,7 +114,7 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
 
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
